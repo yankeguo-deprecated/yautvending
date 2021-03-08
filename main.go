@@ -48,7 +48,7 @@ func main() {
 
 	// output mainnet parameters
 	fileProtocol := filepath.Join(dir, "protocol.json")
-	if err = cli.Cmd().Query().ProtocolParameters().OptMainnet().OptOutFile(fileProtocol).Exec().Run(); err != nil {
+	if err = cli.Cmd().Query().ProtocolParameters().OptMainnet().OptMaryEra().OptOutFile(fileProtocol).Exec().Run(); err != nil {
 		return
 	}
 
