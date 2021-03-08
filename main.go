@@ -16,15 +16,15 @@ import (
 )
 
 const (
-	optSocketPath   = "/ipc/node.socket"
-	optExplorerAPI  = "http://172.18.0.5:8100"
-	optTokenName    = "YAUT"
-	optUTXOMaxBatch = 30
-	optMinLovelace  = 1000000
-	optBackLovelace = 200000
-	optSigner       = "ce0b101709696dbc598485a670972e573c34689a2d3974d8c58337ab"
-	optNotAfter     = "181306000"
-	optPolicyScript = `{
+	optSocketPath       = "/ipc/node.socket"
+	optExplorerAPI      = "http://172.18.0.5:8100"
+	optTokenName        = "YAUT"
+	optUTXOMaxBatch     = 30
+	optMinInputLovelace = 2000000
+	optBackLovelace     = 1000000
+	optSigner           = "ce0b101709696dbc598485a670972e573c34689a2d3974d8c58337ab"
+	optNotAfter         = "181306000"
+	optPolicyScript     = `{
   "type": "all",
   "scripts": [
     {
@@ -155,8 +155,8 @@ func main() {
 			count += 1
 		}
 
-		if utxoLovelace < optMinLovelace {
-			log.Println("optMinLovelace not meet")
+		if utxoLovelace < optMinInputLovelace {
+			log.Println("optMinInputLovelace not meet")
 			return
 		}
 
@@ -202,7 +202,7 @@ func main() {
 		}
 
 		for addr, tokenOutput := range txTokenOutputMap {
-			if tokenOutput <= (optMinLovelace - 1000) {
+			if tokenOutput <= (optMinInputLovelace - 1000) {
 				continue
 			}
 			txTokenMint += tokenOutput

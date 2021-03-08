@@ -144,7 +144,7 @@ func QueryTransaction(endpoint string, txid string, txoidx int, selfAddress stri
 		value := big.NewFloat(0).SetInt64(input.Amount.Value)
 		lovelace, _ := big.NewFloat(0).Mul(ratio, value).Int64()
 		lovelace = int64(math.RoundToEven(float64(lovelace)/10) * 10)
-		if lovelace < (optMinLovelace - 1000) {
+		if lovelace < (optMinInputLovelace - 1000) {
 			continue
 		}
 		tokenOutputs[input.Address] = tokenOutputs[input.Address] + lovelace
