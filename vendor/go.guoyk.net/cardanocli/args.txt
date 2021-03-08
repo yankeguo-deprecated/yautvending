@@ -1,5 +1,7 @@
 --address 1
 --fee 1
+--invalid-before 1
+--invalid-hereafter 1
 --mainnet 0
 --mary-era 0
 --mint 1

@@ -9,6 +9,14 @@ func (c *Cmd) OptFee(arg1 string) *Cmd {
     return c.Append("--fee", arg1)
 }
 
+func (c *Cmd) OptInvalidBefore(arg1 string) *Cmd {
+    return c.Append("--invalid-before", arg1)
+}
+
+func (c *Cmd) OptInvalidHereafter(arg1 string) *Cmd {
+    return c.Append("--invalid-hereafter", arg1)
+}
+
 func (c *Cmd) OptMainnet() *Cmd {
     return c.Append("--mainnet")
 }

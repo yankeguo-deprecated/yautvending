@@ -2,5 +2,7 @@ go.guoyk.net/cardanocli v0.0.0-20210307031529-37ad6fdadb34 h1:emhe/0O1zHov9L79WF
 go.guoyk.net/cardanocli v0.0.0-20210307031529-37ad6fdadb34/go.mod h1:h/jyFFo3j6k7y+tUATShY0GfxCnuSFOofmtg6gJySr8=
 go.guoyk.net/cardanocli v0.0.0-20210308080314-fcea1f189b89 h1:WMTJB88c/4/fjDJtzs7eCt9I57IAgoPSh0Q0vV5WvyE=
 go.guoyk.net/cardanocli v0.0.0-20210308080314-fcea1f189b89/go.mod h1:h/jyFFo3j6k7y+tUATShY0GfxCnuSFOofmtg6gJySr8=
+go.guoyk.net/cardanocli v0.0.0-20210308083021-f8d81e981e5a h1:152zsO6elSMnBFr/5fBSWy5j5cq0LrZy/uQN/sLFuYI=
+go.guoyk.net/cardanocli v0.0.0-20210308083021-f8d81e981e5a/go.mod h1:h/jyFFo3j6k7y+tUATShY0GfxCnuSFOofmtg6gJySr8=
 go.guoyk.net/requo v0.0.0-20210121040227-558d8e107669 h1:5AhSMMnU2DoM01E3i1DL+XpRxyCcFUqoiH25KgD/8rM=
 go.guoyk.net/requo v0.0.0-20210121040227-558d8e107669/go.mod h1:vdUh6BsZ4Tn7Xd99S3dY98KgRhVAyHgTTQiOol0oweE=
