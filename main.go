@@ -82,7 +82,7 @@ func main() {
 				log.Println("Exceeding optUTXOMaxBatch")
 				continue
 			}
-			log.Println("Processing:", tx)
+			log.Println("Found:", tx)
 			if len(out.Amount) == 0 {
 				log.Println("Invalid number of amount in query utxos output")
 				continue
@@ -105,6 +105,22 @@ func main() {
 			inputs = append(inputs, tx)
 		}
 		log.Println("Inputs:", "["+strings.Join(inputs, ",")+"]", ", Lovelace =", totalLovelace)
+	}
+
+	// calculate utxo distribution
+	for _, input := range inputs {
+		log.Println("Checking:", input)
+		splits := strings.Split(input, "#")
+		if len(splits) != 2 {
+			log.Println("Invalid TX Input:", input)
+		}
+		var txid string
+		var txidx int
+		txid = splits[0]
+		if txidx, err = strconv.Atoi(splits[1]); err != nil {
+			return
+		}
+		log.Println("Split:", txid, txidx)
 	}
 
 }
