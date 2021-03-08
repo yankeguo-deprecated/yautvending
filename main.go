@@ -111,6 +111,8 @@ func main() {
 		log.Println("Inputs:", "["+strings.Join(availableInputs, ",")+"]", ", Lovelace =", availableLovelace)
 	}
 
+	log.Println("Available Lovelace", availableLovelace)
+
 	tokenOuts := map[string]int64{}
 
 	// calculate utxo distribution
@@ -163,7 +165,7 @@ func main() {
 		for addr, tokenCount := range tokenOuts {
 			countOut++
 			countMint += tokenCount
-			cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d %s.%s", addr, tokenCount, policyId, optTokenName))
+			cmd = cmd.OptTxOut(fmt.Sprintf("%s+0+%d %s.%s", addr, tokenCount, policyId, optTokenName))
 		}
 		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", addrGringotts, availableLovelace))
 		countOut++
@@ -214,7 +216,7 @@ func main() {
 			cmd = cmd.OptTxIn(input)
 		}
 		for addr, tokenCount := range tokenOuts {
-			cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d %s.%s", addr, tokenCount, policyId, optTokenName))
+			cmd = cmd.OptTxOut(fmt.Sprintf("%s+0+%d %s.%s", addr, tokenCount, policyId, optTokenName))
 		}
 		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", addrGringotts, availableLovelace-fee))
 		cmd = cmd.OptMint(fmt.Sprintf("%d %s.%s", countMint, policyId, optTokenName))
