@@ -20,8 +20,8 @@ const (
 	optExplorerAPI      = "http://172.18.0.5:8100"
 	optTokenName        = "YAUT"
 	optUTXOMaxBatch     = 30
-	optMinInputLovelace = 2000000
-	optBackLovelace     = 1200000
+	optMinInputLovelace = 5000000
+	optBackLovelace     = 2000000
 	optSigner           = "ce0b101709696dbc598485a670972e573c34689a2d3974d8c58337ab"
 	optNotAfter         = "181306000"
 	optPolicyScript     = `{
