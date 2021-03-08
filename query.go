@@ -103,8 +103,8 @@ func (resp QueryTransactionResponse) Check() (err error) {
 	return
 }
 
-func QueryTransaction(endpoint string, txid string, txoidx int, selfAddress string) (contributes map[string]int64, err error) {
-	contributes = make(map[string]int64)
+func QueryTransaction(endpoint string, txid string, txoidx int, selfAddress string) (tokenOutputs map[string]int64, err error) {
+	tokenOutputs = make(map[string]int64)
 	var resp QueryTransactionResponse
 	if err = requo.JSONGet(context.Background(), endpoint+"/api/txs/summary/"+txid, &resp); err != nil {
 		return
@@ -113,38 +113,40 @@ func QueryTransaction(endpoint string, txid string, txoidx int, selfAddress stri
 		return
 	}
 	var ok bool
-	var lovelaceReceived int64
+	var toMeOutput int64
 	for _, out := range resp.Right.Outputs {
 		if *out.TxIndex == txoidx {
 			if out.Address != selfAddress {
 				err = errors.New("not my address:" + out.Address)
 				return
 			}
-			lovelaceReceived = out.Amount.Value
+			toMeOutput = out.Amount.Value
 			ok = true
 			break
 		}
 	}
-	if lovelaceReceived == 0 || !ok {
+	if toMeOutput == 0 || !ok {
 		err = fmt.Errorf("missing ok output")
 		return
 	}
-	lovelaceRF := big.NewFloat(0).SetInt64(lovelaceReceived)
-	totalOF := big.NewFloat(0).SetInt64(resp.Right.TotalOutput.Value)
-	ratio := big.NewFloat(0).Quo(lovelaceRF, totalOF)
+	toMeOutputF := big.NewFloat(0).SetInt64(toMeOutput)
+	totalOutF := big.NewFloat(0).SetInt64(resp.Right.TotalOutput.Value)
+	ratioFee := big.NewFloat(0).Quo(big.NewFloat(0).SetInt64(resp.Right.TotalOutput.Value), big.NewFloat(0).SetInt64(resp.Right.TotalInput.Value))
+	ratioToMe := big.NewFloat(0).Quo(toMeOutputF, totalOutF)
+	ratio := big.NewFloat(0).Mul(ratioToMe, ratioFee)
 
-	for _, in := range resp.Right.Inputs {
-		if in.Address == selfAddress {
+	for _, input := range resp.Right.Inputs {
+		if input.Address == selfAddress {
 			continue
 		}
-		log.Printf("From: %s %d", in.Address, in.Amount.Value)
-		f := big.NewFloat(0).SetInt64(in.Amount.Value)
-		contrib, _ := big.NewFloat(0).Mul(ratio, f).Int64()
-		if contrib < optMinLovelace {
+		log.Printf("From: %s %d", input.Address, input.Amount.Value)
+		value := big.NewFloat(0).SetInt64(input.Amount.Value)
+		lovelace, _ := big.NewFloat(0).Mul(ratio, value).Int64()
+		if lovelace < (optMinLovelace - 1000) {
 			continue
 		}
-		contributes[in.Address] = contributes[in.Address] + contrib
-		log.Printf("Contrib: %s %d", in.Address, contrib)
+		tokenOutputs[input.Address] = tokenOutputs[input.Address] + lovelace
+		log.Printf("Received: %s %d", input.Address, lovelace)
 	}
 
 	return
