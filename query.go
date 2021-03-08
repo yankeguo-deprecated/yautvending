@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go.guoyk.net/requo"
 	"log"
+	"math"
 	"math/big"
 	"strconv"
 )
@@ -142,6 +143,7 @@ func QueryTransaction(endpoint string, txid string, txoidx int, selfAddress stri
 		log.Printf("From: %s %d", input.Address, input.Amount.Value)
 		value := big.NewFloat(0).SetInt64(input.Amount.Value)
 		lovelace, _ := big.NewFloat(0).Mul(ratio, value).Int64()
+		lovelace = int64(math.RoundToEven(float64(lovelace)/10) * 10)
 		if lovelace < (optMinLovelace - 1000) {
 			continue
 		}
