@@ -219,6 +219,7 @@ func main() {
 		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", addrGringotts, availableLovelace-fee))
 		cmd = cmd.OptMint(fmt.Sprintf("%d %s.%s", countMint, policyId, optTokenName))
 		cmd.OptOutFile(fileTxRaw)
+		_ = json.NewEncoder(os.Stdout).Encode(cmd.Args)
 		if err = cmd.Exec().Run(); err != nil {
 			return
 		}
