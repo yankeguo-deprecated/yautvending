@@ -21,7 +21,7 @@ const (
 	optTokenName    = "YAUT"
 	optUTXOMaxBatch = 30
 	optMinLovelace  = 1000000
-	optBackLovelace = 100000
+	optBackLovelace = 150000
 	optSigner       = "ce0b101709696dbc598485a670972e573c34689a2d3974d8c58337ab"
 	optNotAfter     = "181306000"
 	optPolicyScript = `{
