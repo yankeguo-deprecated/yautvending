@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
-	"path/filepath"
 	"strings"
 )
 
@@ -17,9 +16,9 @@ func RandomHex(n int) string {
 	return hex.EncodeToString(buf)
 }
 
-func ReadFile(f ...string) (c string, err error) {
+func ReadFile(f string) (c string, err error) {
 	var buf []byte
-	if buf, err = ioutil.ReadFile(filepath.Join(f...)); err != nil {
+	if buf, err = ioutil.ReadFile(f); err != nil {
 		return
 	}
 	c = strings.TrimSpace(string(buf))

@@ -7,7 +7,13 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
+)
+
+const (
+	optUTXOMaxBatch = 30
+	optMinLovelace  = 1000000
 )
 
 func main() {
@@ -35,33 +41,69 @@ func main() {
 
 	// load dist.addr
 	var addrDist string
-	if addrDist, err = ReadFile("addrs", "dist.addr"); err != nil {
+	if addrDist, err = ReadFile(filepath.Join("addrs", "dist.addr")); err != nil {
 		return
 	}
 	log.Println("AddrDist:", addrDist)
 
+	// output mainnet parameters
+	fileProtocol := filepath.Join(dir, "protocol.json")
+	if err = cli.Cmd().Query().ProtocolParameters().OptMainnet().OptOutFile(fileProtocol).Exec().Run(); err != nil {
+		return
+	}
+
 	// output utxos with cardano-cli
-	utxoFile := filepath.Join(dir, "utxo.json")
-
-	if err = cli.Cmd().Query().Utxo().OptAddress(addrDist).OptMainnet().OptMaryEra().OptOutFile(utxoFile).Exec().Run(); err != nil {
+	fileUTXO := filepath.Join(dir, "utxo.json")
+	if err = cli.Cmd().Query().Utxo().OptAddress(addrDist).OptMainnet().OptMaryEra().OptOutFile(fileUTXO).Exec().Run(); err != nil {
 		return
 	}
 
-	type UTXOOutput struct {
-		Amount []json.RawMessage `json:"amount"`
-	}
+	// calculate transactions to handle
 
-	var utxos map[string]UTXOOutput
-
-	if err = ReadJSON(utxoFile, &utxos); err != nil {
-		return
-	}
-
-	for tx, out := range utxos {
-		if len(out.Amount) == 0 {
-			continue
+	var inputs []string
+	{
+		mapInputs := map[string]struct{}{}
+		type UTXOOutput struct {
+			Amount []json.RawMessage `json:"amount"`
 		}
-		log.Println("UTXO:", tx, string(out.Amount[0]))
+
+		var utxos map[string]UTXOOutput
+
+		if err = ReadJSON(fileUTXO, &utxos); err != nil {
+			return
+		}
+
+		var totalCount int
+		var totalLovelace int64
+
+		for tx, out := range utxos {
+			if totalCount >= optUTXOMaxBatch {
+				log.Println("Exceeding optUTXOMaxBatch")
+				continue
+			}
+			log.Println("Processing:", tx)
+			if len(out.Amount) == 0 {
+				log.Println("Invalid number of amount in query utxos output")
+				continue
+			}
+			var lovelace int64
+			if lovelace, err = strconv.ParseInt(string(out.Amount[0]), 10, 64); err != nil {
+				return
+			}
+			mapInputs[tx] = struct{}{}
+			totalCount += 1
+			totalLovelace += lovelace
+		}
+
+		if totalLovelace < optMinLovelace {
+			log.Println("optMinLovelace not meet")
+			return
+		}
+
+		for tx := range mapInputs {
+			inputs = append(inputs, tx)
+		}
+		log.Println("Inputs:", "["+strings.Join(inputs, ",")+"]", ", Lovelace =", totalLovelace)
 	}
 
 }
