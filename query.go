@@ -14,12 +14,14 @@ type GetCoin struct {
 }
 
 func (g *GetCoin) UnmarshalJSON(buf []byte) (err error) {
-	var s string
+	var s struct {
+		V string `json:"getCoin"`
+	}
 	if err = json.Unmarshal(buf, &s); err != nil {
 		return
 	}
 	var f *big.Float
-	if f, _, err = big.NewFloat(0).Parse(s, 10); err != nil {
+	if f, _, err = big.NewFloat(0).Parse(s.V, 10); err != nil {
 		return
 	}
 	g.Value, _ = f.Int64()
