@@ -140,6 +140,9 @@ func QueryTransaction(endpoint string, txid string, txoidx int, selfAddress stri
 		log.Printf("From: %s %d", in.Address, in.Amount.Value)
 		f := big.NewFloat(0).SetInt64(in.Amount.Value)
 		contrib, _ := big.NewFloat(0).Mul(ratio, f).Int64()
+		if contrib < optMinLovelace {
+			continue
+		}
 		contributes[in.Address] = contributes[in.Address] + contrib
 		log.Printf("Contrib: %s %d", in.Address, contrib)
 	}

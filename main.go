@@ -20,6 +20,7 @@ const (
 	optTokenName    = "YAUT"
 	optUTXOMaxBatch = 30
 	optMinLovelace  = 1000000
+	optBackLovelace = 100000
 	optSigner       = "ce0b101709696dbc598485a670972e573c34689a2d3974d8c58337ab"
 	optNotAfter     = "181306000"
 	optPolicyScript = `{
@@ -149,7 +150,7 @@ func main() {
 			availableLovelace += lovelace
 		}
 
-		if availableLovelace < optMinLovelace*2 {
+		if availableLovelace < optMinLovelace {
 			log.Println("optMinLovelace not meet")
 			return
 		}
@@ -191,6 +192,11 @@ func main() {
 		}
 	}
 
+	if len(tokenOuts) == 0 {
+		log.Println("missing tokens out")
+		return
+	}
+
 	log.Println("Gringotts:", optAddrGringotts)
 
 	// first build tx
@@ -203,13 +209,14 @@ func main() {
 			cmd = cmd.OptTxIn(input)
 		}
 		for addr, tokenCount := range tokenOuts {
+			if tokenCount <= 0 {
+				continue
+			}
 			countOut++
 			countMint += tokenCount
-			cmd = cmd.OptTxOut(fmt.Sprintf("%s+0+%d %s.%s", addr, tokenCount, policyId, optTokenName))
+			cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d+%d %s.%s", addr, optBackLovelace, tokenCount, policyId, optTokenName))
 		}
-		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", optAddrGringotts, availableLovelace-optMinLovelace))
-		countOut++
-		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", addrDist, optMinLovelace))
+		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", optAddrGringotts, availableLovelace))
 		countOut++
 		cmd = cmd.OptMint(fmt.Sprintf("%d %s.%s", countMint, policyId, optTokenName))
 		cmd.OptOutFile(fileTxRaw)
@@ -247,7 +254,7 @@ func main() {
 
 	log.Println("Fee Calculated:", fee)
 
-	if fee >= availableLovelace-optMinLovelace {
+	if fee >= availableLovelace {
 		err = errors.New("fee > available lovelace")
 		return
 	}
@@ -258,10 +265,12 @@ func main() {
 			cmd = cmd.OptTxIn(input)
 		}
 		for addr, tokenCount := range tokenOuts {
-			cmd = cmd.OptTxOut(fmt.Sprintf("%s+0+%d %s.%s", addr, tokenCount, policyId, optTokenName))
+			if tokenCount <= 0 {
+				continue
+			}
+			cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d+%d %s.%s", addr, optBackLovelace, tokenCount, policyId, optTokenName))
 		}
-		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", optAddrGringotts, availableLovelace-optMinLovelace-fee))
-		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", addrDist, optMinLovelace))
+		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", optAddrGringotts, availableLovelace-fee-int64(countOut)*optBackLovelace))
 		cmd = cmd.OptMint(fmt.Sprintf("%d %s.%s", countMint, policyId, optTokenName))
 		cmd.OptOutFile(fileTxRaw)
 		_ = json.NewEncoder(os.Stdout).Encode(cmd.Args)
