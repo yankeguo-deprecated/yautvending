@@ -103,7 +103,7 @@ func (resp QueryTransactionResponse) Check() (err error) {
 	return
 }
 
-func QueryTransaction(endpoint string, txid string, txoidx int) (contributes map[string]int64, err error) {
+func QueryTransaction(endpoint string, txid string, txoidx int, selfAddress string) (contributes map[string]int64, err error) {
 	contributes = make(map[string]int64)
 	var resp QueryTransactionResponse
 	if err = requo.JSONGet(context.Background(), endpoint+"/api/txs/summary/"+txid, &resp); err != nil {
@@ -116,6 +116,10 @@ func QueryTransaction(endpoint string, txid string, txoidx int) (contributes map
 	var lovelaceReceived int64
 	for _, out := range resp.Right.Outputs {
 		if *out.TxIndex == txoidx {
+			if out.Address != selfAddress {
+				err = errors.New("not my address:" + out.Address)
+				return
+			}
 			lovelaceReceived = out.Amount.Value
 			ok = true
 			break

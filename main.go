@@ -179,7 +179,7 @@ func main() {
 		}
 		log.Println("Split:", txid, txidx)
 		var contributes map[string]int64
-		if contributes, err = QueryTransaction(optExplorerAPI, txid, txidx); err != nil {
+		if contributes, err = QueryTransaction(optExplorerAPI, txid, txidx, addrDist); err != nil {
 			return
 		}
 		for addr, contrib := range contributes {
