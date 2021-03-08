@@ -134,6 +134,9 @@ func QueryTransaction(endpoint string, txid string, txoidx int, selfAddress stri
 	ratio := big.NewFloat(0).Quo(lovelaceRF, totalOF)
 
 	for _, in := range resp.Right.Inputs {
+		if in.Address == selfAddress {
+			continue
+		}
 		log.Printf("From: %s %d", in.Address, in.Amount.Value)
 		f := big.NewFloat(0).SetInt64(in.Amount.Value)
 		contrib, _ := big.NewFloat(0).Mul(ratio, f).Int64()

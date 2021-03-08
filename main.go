@@ -149,7 +149,7 @@ func main() {
 			availableLovelace += lovelace
 		}
 
-		if availableLovelace < optMinLovelace {
+		if availableLovelace < optMinLovelace*2 {
 			log.Println("optMinLovelace not meet")
 			return
 		}
@@ -207,7 +207,9 @@ func main() {
 			countMint += tokenCount
 			cmd = cmd.OptTxOut(fmt.Sprintf("%s+0+%d %s.%s", addr, tokenCount, policyId, optTokenName))
 		}
-		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", optAddrGringotts, availableLovelace))
+		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", optAddrGringotts, availableLovelace-optMinLovelace))
+		countOut++
+		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", addrDist, optMinLovelace))
 		countOut++
 		cmd = cmd.OptMint(fmt.Sprintf("%d %s.%s", countMint, policyId, optTokenName))
 		cmd.OptOutFile(fileTxRaw)
@@ -245,7 +247,7 @@ func main() {
 
 	log.Println("Fee Calculated:", fee)
 
-	if fee >= availableLovelace {
+	if fee >= availableLovelace-optMinLovelace {
 		err = errors.New("fee > available lovelace")
 		return
 	}
@@ -258,7 +260,8 @@ func main() {
 		for addr, tokenCount := range tokenOuts {
 			cmd = cmd.OptTxOut(fmt.Sprintf("%s+0+%d %s.%s", addr, tokenCount, policyId, optTokenName))
 		}
-		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", optAddrGringotts, availableLovelace-fee))
+		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", optAddrGringotts, availableLovelace-optMinLovelace-fee))
+		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", addrDist, optMinLovelace))
 		cmd = cmd.OptMint(fmt.Sprintf("%d %s.%s", countMint, policyId, optTokenName))
 		cmd.OptOutFile(fileTxRaw)
 		_ = json.NewEncoder(os.Stdout).Encode(cmd.Args)
