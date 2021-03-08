@@ -274,7 +274,7 @@ func main() {
 	if err = cli.Cmd().Transaction().Sign().
 		OptSigningKeyFile(filepath.Join("keys", "dist.skey")).
 		OptSigningKeyFile(filepath.Join("keys", "issuer.skey")).
-		OptScriptFile(filepath.Join("policy", "policy.script")).
+		OptScriptFile(filePolicyScript).
 		OptMainnet().
 		OptTxBodyFile(fileTxRaw).
 		OptOutFile(fileTxSigned).Exec().Run(); err != nil {
