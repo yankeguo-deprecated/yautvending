@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	optSocketPath   = "/ipc/node.socket"
 	optUTXOMaxBatch = 30
 	optMinLovelace  = 1000000
 )
@@ -29,7 +30,7 @@ func main() {
 
 	// create cli
 	cli := cardanocli.New()
-	cli.SocketPath = "/ipc/node.socket"
+	cli.SocketPath = optSocketPath
 
 	// ensure dir
 	dir := filepath.Join("tmp", strconv.FormatInt(time.Now().Unix(), 10)+"-"+RandomHex(16))
