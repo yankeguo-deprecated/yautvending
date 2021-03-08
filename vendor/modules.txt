@@ -1,3 +1,6 @@
 # go.guoyk.net/cardanocli v0.0.0-20210307031529-37ad6fdadb34
 ## explicit
 go.guoyk.net/cardanocli
+# go.guoyk.net/requo v0.0.0-20210121040227-558d8e107669
+## explicit
+go.guoyk.net/requo

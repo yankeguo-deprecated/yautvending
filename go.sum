@@ -1,2 +1,4 @@
 go.guoyk.net/cardanocli v0.0.0-20210307031529-37ad6fdadb34 h1:emhe/0O1zHov9L79WFRqhE9wjEhZArNVj4cJO6veQf8=
 go.guoyk.net/cardanocli v0.0.0-20210307031529-37ad6fdadb34/go.mod h1:h/jyFFo3j6k7y+tUATShY0GfxCnuSFOofmtg6gJySr8=
+go.guoyk.net/requo v0.0.0-20210121040227-558d8e107669 h1:5AhSMMnU2DoM01E3i1DL+XpRxyCcFUqoiH25KgD/8rM=
+go.guoyk.net/requo v0.0.0-20210121040227-558d8e107669/go.mod h1:vdUh6BsZ4Tn7Xd99S3dY98KgRhVAyHgTTQiOol0oweE=
