@@ -1,0 +1,3 @@
+# go.guoyk.net/cardanocli v0.0.0-20210307031529-37ad6fdadb34
+## explicit
+go.guoyk.net/cardanocli
