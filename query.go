@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"go.guoyk.net/requo"
+	"log"
 	"math/big"
 	"strconv"
 )
@@ -129,9 +130,11 @@ func QueryTransaction(endpoint string, txid string, txoidx int) (contributes map
 	ratio := big.NewFloat(0).Quo(lovelaceRF, totalOF)
 
 	for _, in := range resp.Right.Inputs {
+		log.Printf("From: %s %d", in.Address, in.Amount.Value)
 		f := big.NewFloat(0).SetInt64(in.Amount.Value)
 		contrib, _ := big.NewFloat(0).Mul(ratio, f).Int64()
 		contributes[in.Address] = contributes[in.Address] + contrib
+		log.Printf("Contrib: %s %d", in.Address, contrib)
 	}
 
 	return
