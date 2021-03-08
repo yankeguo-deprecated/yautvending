@@ -21,6 +21,8 @@ func (c *Cmd) Exec() *exec.Cmd {
 		x.Env = os.Environ()
 		x.Env = append(x.Env, fmt.Sprintf("CARDANO_NODE_SOCKET_PATH=%s", c.Cli.SocketPath))
 	}
+	x.Stdout = os.Stdout
+	x.Stderr = os.Stderr
 	return x
 }
 

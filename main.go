@@ -225,7 +225,7 @@ func main() {
 		}
 	}
 
-	log.Println("Finale TX Built:", fileTxRaw)
+	log.Println("Final TX Built:", fileTxRaw)
 
 	fileTxSigned := filepath.Join(dir, "tx.signed")
 
@@ -243,5 +243,12 @@ func main() {
 	if signed, err = ReadFile(fileTxSigned); err != nil {
 		return
 	}
+
 	log.Println("Signed:", signed)
+
+	if err = cli.Cmd().Transaction().Submit().OptTxFile(fileTxSigned).OptMainnet().Exec().Run(); err != nil {
+		return
+	}
+
+	log.Println("Submitted")
 }
