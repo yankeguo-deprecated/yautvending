@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go.guoyk.net/requo"
 	"math/big"
+	"strconv"
 )
 
 type GetCoin struct {
@@ -20,11 +21,9 @@ func (g *GetCoin) UnmarshalJSON(buf []byte) (err error) {
 	if err = json.Unmarshal(buf, &s); err != nil {
 		return
 	}
-	var f *big.Float
-	if f, _, err = big.NewFloat(0).Parse(s.V, 10); err != nil {
+	if g.Value, err = strconv.ParseInt(s.V, 10, 64); err != nil {
 		return
 	}
-	g.Value, _ = f.Int64()
 	return
 }
 
