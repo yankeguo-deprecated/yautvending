@@ -206,7 +206,7 @@ func main() {
 				continue
 			}
 			txTokenMint += tokenOutput
-			txTokenOutputs = append(txTokenOutputs, TokenOutput{Address: addr, Amount: tokenOutput})
+			txTokenOutputs = append(txTokenOutputs, TokenOutput{Address: addr, Amount: tokenOutput - optBackLovelace})
 		}
 	}
 
