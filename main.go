@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -22,22 +21,15 @@ const (
 	optUTXOMaxBatch     = 30
 	optMinInputLovelace = 5000000
 	optBackLovelace     = 2000000
-	optSigner           = "ce0b101709696dbc598485a670972e573c34689a2d3974d8c58337ab"
-	optNotAfter         = "181306000"
-	optPolicyScript     = `{
-  "type": "all",
-  "scripts": [
-    {
-      "type": "sig",
-      "keyHash": "` + optSigner + `"
-    },
-    {
-      "type": "before",
-      "slot": ` + optNotAfter + `
-    }
-  ]
-}`
-	optAddrGringotts = "addr1q9aemmfl4qr8sjp2xj5zupzvuamuw36z5awv865qt0lsl3pj72alpak07tadfuusgl5guq3ndtr3r2aknt4c3tgny7eqna8kkj"
+	optNotAfter         = 181306000
+	optAddrGringotts    = "addr1q9aemmfl4qr8sjp2xj5zupzvuamuw36z5awv865qt0lsl3pj72alpak07tadfuusgl5guq3ndtr3r2aknt4c3tgny7eqna8kkj"
+)
+
+var (
+	optIssuerSKeyFile       = filepath.Join("keys", "issuer.skey")
+	optIssuerVKeyFile       = filepath.Join("keys", "issuer.vkey")
+	optDistributionSKeyFile = filepath.Join("keys", "dist.skey")
+	optDistributionVKeyFile = filepath.Join("keys", "dist.vkey")
 )
 
 func main() {
@@ -68,21 +60,37 @@ func main() {
 	defer os.RemoveAll(dirTemp)
 
 	// generate policy file and policy id
-	log.Println("PolicyScript:", optPolicyScript)
+	var keyHashIssuerVKey string
+	if err = cli.Cmd().
+		Address().
+		KeyHash().
+		OptPaymentVerificationKeyFile(optIssuerVKeyFile).
+		Run(cardanocli.CollectStdout(&keyHashIssuerVKey)); err != nil {
+		return
+	}
+	log.Println("IssuerVKeyHash:", keyHashIssuerVKey)
+
+	policyScript := fmt.Sprintf(
+		`{"type":"all","scripts":[{"type":"sig","keyHash":"%s"},{"type":"before","slot":%d}]}`,
+		keyHashIssuerVKey,
+		optNotAfter,
+	)
+	log.Println("PolicyScript:", policyScript)
+
 	filePolicyScript := filepath.Join(dirTemp, "policy.script")
-	if err = WriteFile(filePolicyScript, optPolicyScript); err != nil {
+	if err = WriteFile(filePolicyScript, policyScript); err != nil {
 		return
 	}
 
 	var policyID string
 	{
-		x := cli.Cmd().Transaction().Policyid().OptScriptFile(filePolicyScript).Exec()
-		out := &bytes.Buffer{}
-		x.Stdout = out
-		if err = x.Run(); err != nil {
+		if err = cli.Cmd().
+			Transaction().
+			Policyid().
+			OptScriptFile(filePolicyScript).
+			Run(cardanocli.CollectStdout(&policyID)); err != nil {
 			return
 		}
-		policyID = strings.TrimSpace(out.String())
 		if policyID == "" {
 			err = errors.New("invalid policy id")
 			return
@@ -93,13 +101,14 @@ func main() {
 	// load dist.addr
 	var addrDist string
 	{
-		x := cli.Cmd().Address().Build().OptPaymentVerificationKeyFile(filepath.Join("keys", "dist.vkey")).OptMainnet().Exec()
-		out := &bytes.Buffer{}
-		x.Stdout = out
-		if err = x.Run(); err != nil {
+		if err = cli.Cmd().
+			Address().
+			Build().
+			OptPaymentVerificationKeyFile(optDistributionVKeyFile).
+			OptMainnet().
+			Run(cardanocli.CollectStdout(&addrDist)); err != nil {
 			return
 		}
-		addrDist = strings.TrimSpace(out.String())
 		if addrDist == "" {
 			err = errors.New("invalid dist addr")
 			return
@@ -109,13 +118,25 @@ func main() {
 
 	// output mainnet parameters
 	fileProtocol := filepath.Join(dirTemp, "protocol.json")
-	if err = cli.Cmd().Query().ProtocolParameters().OptMainnet().OptMaryEra().OptOutFile(fileProtocol).Exec().Run(); err != nil {
+	if err = cli.Cmd().
+		Query().
+		ProtocolParameters().
+		OptMainnet().
+		OptMaryEra().
+		OptOutFile(fileProtocol).Run(); err != nil {
 		return
 	}
 
 	// output utxos with cardano-cli
 	fileUTXO := filepath.Join(dirTemp, "utxo.json")
-	if err = cli.Cmd().Query().Utxo().OptAddress(addrDist).OptMainnet().OptMaryEra().OptOutFile(fileUTXO).Exec().Run(); err != nil {
+	if err = cli.Cmd().
+		Query().
+		Utxo().
+		OptAddress(addrDist).
+		OptMainnet().
+		OptMaryEra().
+		OptOutFile(fileUTXO).
+		Run(); err != nil {
 		return
 	}
 
@@ -221,7 +242,12 @@ func main() {
 	// first build tx
 	fileTxRaw := filepath.Join(dirTemp, "tx.raw")
 	{
-		cmd := cli.Cmd().Transaction().BuildRaw().OptMaryEra().OptFee("0").OptInvalidHereafter(optNotAfter)
+		cmd := cli.Cmd().
+			Transaction().
+			BuildRaw().
+			OptMaryEra().
+			OptFee("0").
+			OptInvalidHereafter(strconv.Itoa(optNotAfter))
 		for _, input := range utxoIDs {
 			cmd = cmd.OptTxIn(input)
 		}
@@ -231,36 +257,37 @@ func main() {
 		cmd = cmd.OptTxOut(fmt.Sprintf("%s+%d", optAddrGringotts, utxoLovelace-int64(len(txTokenOutputs))*optBackLovelace))
 		cmd = cmd.OptMint(fmt.Sprintf("%d %s.%s", txTokenMint, policyID, optTokenName))
 		cmd.OptOutFile(fileTxRaw)
-		if err = cmd.Exec().Run(); err != nil {
+		if err = cmd.Run(); err != nil {
 			return
 		}
 	}
 
 	// calculate fee
 	var fee int64
-	out := &bytes.Buffer{}
-	x := cli.Cmd().Transaction().CalculateMinFee().
-		OptTxBodyFile(fileTxRaw).
-		OptTxInCount(strconv.Itoa(len(utxoIDs))).
-		OptTxOutCount(strconv.Itoa(len(txTokenOutputs) + 1)).
-		OptWitnessCount("2").
-		OptMainnet().
-		OptProtocolParamsFile(fileProtocol).Exec()
-	x.Stdout = out
-	if err = x.Run(); err != nil {
-		return
-	}
-	feeSplits := strings.Split(strings.TrimSpace(out.String()), " ")
-	if len(feeSplits) != 2 {
-		err = fmt.Errorf("invalid fee output: %s", out.String())
-		return
-	}
-	if feeSplits[1] != "Lovelace" {
-		err = fmt.Errorf("invalid fee unit: %s", feeSplits[1])
-		return
-	}
-	if fee, err = strconv.ParseInt(feeSplits[0], 10, 64); err != nil {
-		return
+	{
+		var out string
+		if err = cli.Cmd().Transaction().CalculateMinFee().
+			OptTxBodyFile(fileTxRaw).
+			OptTxInCount(strconv.Itoa(len(utxoIDs))).
+			OptTxOutCount(strconv.Itoa(len(txTokenOutputs) + 1)).
+			OptWitnessCount("2").
+			OptMainnet().
+			OptProtocolParamsFile(fileProtocol).
+			Run(cardanocli.CollectStdout(&out)); err != nil {
+			return
+		}
+		feeSplits := strings.Split(strings.TrimSpace(out), " ")
+		if len(feeSplits) != 2 {
+			err = fmt.Errorf("invalid fee output: %s", out)
+			return
+		}
+		if feeSplits[1] != "Lovelace" {
+			err = fmt.Errorf("invalid fee unit: %s", feeSplits[1])
+			return
+		}
+		if fee, err = strconv.ParseInt(feeSplits[0], 10, 64); err != nil {
+			return
+		}
 	}
 
 	log.Println("Fee Calculated:", fee)
@@ -271,7 +298,12 @@ func main() {
 	}
 
 	{
-		cmd := cli.Cmd().Transaction().BuildRaw().OptMaryEra().OptFee(strconv.FormatInt(fee, 10)).OptInvalidHereafter(optNotAfter)
+		cmd := cli.Cmd().
+			Transaction().
+			BuildRaw().
+			OptMaryEra().
+			OptFee(strconv.FormatInt(fee, 10)).
+			OptInvalidHereafter(strconv.Itoa(optNotAfter))
 		for _, input := range utxoIDs {
 			cmd = cmd.OptTxIn(input)
 		}
@@ -282,7 +314,7 @@ func main() {
 		cmd = cmd.OptMint(fmt.Sprintf("%d %s.%s", txTokenMint, policyID, optTokenName))
 		cmd.OptOutFile(fileTxRaw)
 		_ = json.NewEncoder(os.Stdout).Encode(cmd.Args)
-		if err = cmd.Exec().Run(); err != nil {
+		if err = cmd.Run(); err != nil {
 			return
 		}
 	}
@@ -292,12 +324,12 @@ func main() {
 	fileTxSigned := filepath.Join(dirTemp, "tx.signed")
 
 	if err = cli.Cmd().Transaction().Sign().
-		OptSigningKeyFile(filepath.Join("keys", "dist.skey")).
-		OptSigningKeyFile(filepath.Join("keys", "issuer.skey")).
+		OptSigningKeyFile(optDistributionSKeyFile).
+		OptSigningKeyFile(optIssuerSKeyFile).
 		OptScriptFile(filePolicyScript).
 		OptMainnet().
 		OptTxBodyFile(fileTxRaw).
-		OptOutFile(fileTxSigned).Exec().Run(); err != nil {
+		OptOutFile(fileTxSigned).Run(); err != nil {
 		return
 	}
 
@@ -312,7 +344,7 @@ func main() {
 		return
 	}
 
-	if err = cli.Cmd().Transaction().Submit().OptTxFile(fileTxSigned).OptMainnet().Exec().Run(); err != nil {
+	if err = cli.Cmd().Transaction().Submit().OptTxFile(fileTxSigned).OptMainnet().Run(); err != nil {
 		return
 	}
 
