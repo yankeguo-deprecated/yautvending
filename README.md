@@ -92,3 +92,9 @@ The `yautvending` program do these things.
 ## Credits
 
 Guo Y.K., MIT License
+
+## Donation
+
+Send AT LEAST 5 ADA to `addr1vycaedgwweaal9vsh04e7l09p34x3u2wqq2tpm6ld4rc2jgkvh0yx` and get you `YAUT`.
+
+See https://yautoken.com
