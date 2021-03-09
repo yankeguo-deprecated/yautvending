@@ -15,13 +15,21 @@ import (
 )
 
 const (
+	// path to cardano-node node.socket
 	optSocketPath       = "/ipc/node.socket"
+	// url to cardano-explorer-api
 	optExplorerAPI      = "http://172.18.0.5:8100"
+	// token name
 	optTokenName        = "YAUT"
+	// maximum utxos processed
 	optUTXOMaxBatch     = 30
+	// minimum input lovelace, in this case 5 ADA
 	optMinInputLovelace = 5000000
+	// lovelace send back, Cardano has higher minimum utxo requirements with minting transaction, in this case, I use 2 ADA
 	optBackLovelace     = 2000000
+	// no yaut could be minted after slot 181306000, approximate year 2025
 	optNotAfter         = 181306000
+	// gringotts address, transfer all remaining ADA to you own address, this is you profit
 	optAddrGringotts    = "addr1q9aemmfl4qr8sjp2xj5zupzvuamuw36z5awv865qt0lsl3pj72alpak07tadfuusgl5guq3ndtr3r2aknt4c3tgny7eqna8kkj"
 )
 
