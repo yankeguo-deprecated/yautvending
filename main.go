@@ -29,7 +29,7 @@ const (
 	optBackLovelace     = 2000000
 	// no yaut could be minted after slot 181306000, approximate year 2025
 	optNotAfter         = 181306000
-	// gringotts address, transfer all remaining ADA to you own address, this is you profit
+	// gringotts address, transfer all remaining ADA to you own address, this is your profit
 	optAddrGringotts    = "addr1q9aemmfl4qr8sjp2xj5zupzvuamuw36z5awv865qt0lsl3pj72alpak07tadfuusgl5guq3ndtr3r2aknt4c3tgny7eqna8kkj"
 )
 

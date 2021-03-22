@@ -2,6 +2,7 @@ package cardanocli
 
 import (
 	"bytes"
+	"encoding/json"
 	"os/exec"
 	"strings"
 )
@@ -22,9 +23,10 @@ func (h *hookCollectStdout) BeforeRun(x *exec.Cmd) {
 }
 
 func (h *hookCollectStdout) AfterRun(x *exec.Cmd, err *error) {
-	if *err == nil {
-		*h.out = strings.TrimSpace(h.buf.String())
+	if *err != nil {
+		return
 	}
+	*h.out = strings.TrimSpace(h.buf.String())
 }
 
 // CollectStdout create a hook that collects stdout as string
@@ -45,14 +47,39 @@ func (h *hookCollectStderr) BeforeRun(x *exec.Cmd) {
 }
 
 func (h *hookCollectStderr) AfterRun(x *exec.Cmd, err *error) {
-	if *err == nil {
-		*h.out = strings.TrimSpace(h.buf.String())
+	if *err != nil {
+		return
 	}
+	*h.out = strings.TrimSpace(h.buf.String())
 }
 
 // CollectStderr create a hook that collects stderr as string
 func CollectStderr(out *string) Hook {
 	return &hookCollectStderr{
+		buf: &bytes.Buffer{},
+		out: out,
+	}
+}
+
+// CollectStdoutJSON create a hook that collects stdout as JSON
+type hookCollectStdoutJSON struct {
+	buf *bytes.Buffer
+	out interface{}
+}
+
+func (h *hookCollectStdoutJSON) BeforeRun(x *exec.Cmd) {
+	x.Stdout = h.buf
+}
+
+func (h *hookCollectStdoutJSON) AfterRun(x *exec.Cmd, err *error) {
+	if *err != nil {
+		return
+	}
+	*err = json.Unmarshal(h.buf.Bytes(), h.out)
+}
+
+func CollectStdoutJSON(out interface{}) Hook {
+	return &hookCollectStdoutJSON{
 		buf: &bytes.Buffer{},
 		out: out,
 	}

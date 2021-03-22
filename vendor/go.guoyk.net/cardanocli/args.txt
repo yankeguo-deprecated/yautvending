@@ -30,5 +30,6 @@ protocol-parameters 0
 query 0
 sign 0
 submit 0
+tip 0
 transaction 0
 utxo 0

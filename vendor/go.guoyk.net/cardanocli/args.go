@@ -161,6 +161,11 @@ func (c *Cmd) Submit() *Cmd {
     return c.Arg("submit")
 }
 
+// Tip append argument 'tip'
+func (c *Cmd) Tip() *Cmd {
+    return c.Arg("tip")
+}
+
 // Transaction append argument 'transaction'
 func (c *Cmd) Transaction() *Cmd {
     return c.Arg("transaction")

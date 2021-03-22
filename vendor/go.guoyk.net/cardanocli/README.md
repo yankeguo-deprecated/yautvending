@@ -2,8 +2,11 @@
 
 a Golang wrapper for executing cardano-cli commands
 
-I know it's stupid to invoke `cardano-cli` other than communicate with `cardano-node` via `node.socket` directly, but
-this is maybe the best solution for Golang right now.
+## Disclaimer
+
+`cardano-cli` command line arguments and output formats are subjected to change, always use fixed version of `cardano-cli`.
+
+USE THIS LIBRARY AT YOUR OWN RISK.
 
 ## Usage
 
@@ -36,3 +39,9 @@ func main() {
 ## Credits
 
 Guo Y.K.， MIT License
+
+## Donation
+
+Send AT LEAST 5 ADA to `addr1vycaedgwweaal9vsh04e7l09p34x3u2wqq2tpm6ld4rc2jgkvh0yx` and get you `YAUT`.
+
+See https://yautoken.com
