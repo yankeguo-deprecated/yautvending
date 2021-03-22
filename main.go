@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go.guoyk.net/cardanocli"
 	"log"
+	"math/big"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -38,6 +39,7 @@ var (
 	optIssuerVKeyFile       = filepath.Join("keys", "issuer.vkey")
 	optDistributionSKeyFile = filepath.Join("keys", "dist.skey")
 	optDistributionVKeyFile = filepath.Join("keys", "dist.vkey")
+	optExchangeRate, _, _   = big.NewFloat(0).Parse("10", 10)
 )
 
 func main() {
@@ -224,7 +226,7 @@ func main() {
 	var txTokenMint int64
 	var txTokenOutputs []TokenOutput
 	{
-		txTokenOutputMap := map[string]int64{}
+		lovelaceInputMap := map[string]int64{}
 
 		for _, utxoID := range utxoIDs {
 			log.Println("Checking:", utxoID)
@@ -244,17 +246,19 @@ func main() {
 				return
 			}
 			for addr, tokenOutput := range tokenOutputs {
-				txTokenOutputMap[addr] = txTokenOutputMap[addr] + tokenOutput
+				lovelaceInputMap[addr] = lovelaceInputMap[addr] + tokenOutput
 			}
 		}
 
-		for addr, tokenOutput := range txTokenOutputMap {
-			if tokenOutput <= (optMinInputLovelace - 1000) {
+		for addr, lovelaceInput := range lovelaceInputMap {
+			if lovelaceInput <= (optMinInputLovelace - 1000) {
 				continue
 			}
-			tokenOutput = tokenOutput - optBackLovelace
-			txTokenMint += tokenOutput
-			txTokenOutputs = append(txTokenOutputs, TokenOutput{Address: addr, Amount: tokenOutput})
+			txTokenOutput := lovelaceInput - optBackLovelace
+			txTokenOutput, _ = big.NewFloat(0).Mul(optExchangeRate, big.NewFloat(0).SetInt64(txTokenOutput)).Int64()
+
+			txTokenMint += txTokenOutput
+			txTokenOutputs = append(txTokenOutputs, TokenOutput{Address: addr, Amount: txTokenOutput})
 		}
 	}
 
