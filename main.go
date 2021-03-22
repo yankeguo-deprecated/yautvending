@@ -150,6 +150,7 @@ func main() {
 			log.Printf("Invalid SlotNo: %d (Not After %d)", slotNo, optNotAfter)
 			return
 		}
+		log.Println("SlotNo:", slotNo)
 	}
 
 	// output utxos with cardano-cli
