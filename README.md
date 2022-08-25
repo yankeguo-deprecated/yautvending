@@ -98,3 +98,5 @@ Guo Y.K., MIT License
 ~~Send AT LEAST 5 ADA to `addr1vycaedgwweaal9vsh04e7l09p34x3u2wqq2tpm6ld4rc2jgkvh0yx` and get you `YAUT`.~~
 
 ~~See https://yautoken.com~~
+
+Send `ADA` to `addr1q8xpfwdxdmt6spdf9f2qjmw8snrkxj5r8pehct393hec4k85e5kxfgh2qng0mgw6z5pzkhjeqq9lhdkptdya6spwjg0q8mhuj9`
